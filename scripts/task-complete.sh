@@ -40,6 +40,19 @@ if [ "${XDG_SESSION_TYPE:-}" != "wayland" ] && [ -n "$DISPLAY" ] && command -v x
     done
 fi
 
+# --- 1b. Taskbar highlight of THIS session's window --------------------------
+# Linux parity for the Windows taskbar flash: set the EWMH demands-attention
+# hint on this session's own window, so its taskbar entry lights up even when
+# several sessions share one taskbar icon. Needs wmctrl AND the X11 window id
+# from above (so: X11 + xdotool + wmctrl). Silent no-op otherwise and under
+# Wayland (compositors ignore foreign window-state changes). The named
+# notification below is the dependency-free "which session" signal; this is the
+# extra glance-cue when the tools are present.
+if [ -n "$wid" ] && command -v wmctrl >/dev/null 2>&1; then
+    wid_hex=$(printf '0x%x' "$wid" 2>/dev/null || echo "$wid")
+    wmctrl -i -r "$wid_hex" -b add,demands_attention 2>/dev/null || true
+fi
+
 # --- 2. Notification (with click-to-raise when possible) ---------------------
 notify() {
     command -v notify-send >/dev/null 2>&1 || return 0

@@ -42,7 +42,10 @@ Every dependency below is **optional** — if it's missing, that piece is skippe
 | Desktop notification | `libnotify` (`notify-send`) | Present on most desktops. |
 | Sound | `paplay` or `aplay` | PulseAudio/PipeWire or ALSA. |
 | Spoken project name | `spd-say` (speech-dispatcher) **or** `espeak` | Kubuntu ships `spd-say` but **not** `espeak`; other distros vary — one is usually present. |
-| Click-to-raise / window flash (X11) | `xdotool` **or** `wmctrl` | **Neither ships by default on KDE/Kubuntu** — `sudo apt install xdotool` to enable raising. Without them, you still get the named notification and sound. |
+| Click-to-raise the finished window (X11) | `xdotool` (to locate the window) | Click the notification body to raise. |
+| Taskbar highlight of the finished window (X11) — parity with the Windows flash | `xdotool` **and** `wmctrl` | Sets the EWMH _demands-attention_ hint so the right session's taskbar entry lights up even when sessions share one icon. |
+
+> **Heads-up on stock desktops:** Ubuntu GNOME and Kubuntu/KDE ship **neither `xdotool` nor `wmctrl`** (nor `paplay`/`espeak`). So out of the box on Linux you get the **named notification + sound** (via the `aplay`/`spd-say` fallbacks) — which already tells you *which* session finished — but **not** click-to-raise or the taskbar highlight. To enable those on **X11**: `sudo apt install xdotool wmctrl`. On **Wayland**, raising/highlighting a window from another app is blocked by the compositor, so those stay off by design regardless.
 
 On **Wayland**, compositors block one app from raising another's window, so the raise step is skipped by design and you get the notification without the flash.
 
