@@ -1,6 +1,13 @@
 # claude-code-notify
 
+> **Know which Claude Code session just finished — by name — even with a dozen running.**
+
 A **task-complete notifier** for [Claude Code](https://claude.com/claude-code). When a session finishes a turn, it tells you **which** session it was — by name — and draws your eye to the right window. Built for the reality of running **many Claude Code sessions at once**.
+
+## Demo
+
+<!-- Record a ~10s clip and drop it at docs/demo.gif, then replace this line with:  ![claude-code-notify demo](docs/demo.gif) -->
+> 📹 *Demo coming.* One clip: three Claude Code sessions open; one finishes → **its** taskbar button flashes and a toast names that exact session.
 
 On a turn end it:
 
