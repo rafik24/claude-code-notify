@@ -22,9 +22,12 @@ audible="${4:-1}"           # 1 = this session owns the audio slot; 0 = debounce
 log="${TMPDIR:-/tmp}/claude-task-complete.log"
 echo "$(date -Iseconds) project=$project label='$label' audible=$audible" >> "$log" 2>/dev/null || true
 
-# --- 1. Find the hosting terminal window (X11) -------------------------------
+# --- 1. Find the hosting terminal window (X11 only) --------------------------
+# Skip on Wayland even when xdotool is present: it would map the XWayland proxy
+# window and we'd offer a "Raise" action whose handler the compositor silently
+# ignores - a dead affordance. Gate on the session actually being X11.
 wid=""
-if [ -n "$DISPLAY" ] && command -v xdotool >/dev/null 2>&1; then
+if [ "${XDG_SESSION_TYPE:-}" != "wayland" ] && [ -n "$DISPLAY" ] && command -v xdotool >/dev/null 2>&1; then
     pid=$$
     for _ in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
         [ -n "$pid" ] && [ "$pid" != "0" ] || break
