@@ -77,6 +77,20 @@ if [ "$(resolve "$TMP/resumed.jsonl" self-1)" = "Some other session" ]; then
   echo "  FAIL: foreign session title leaked into a resumed session's notification"; fail=1
 fi
 
+# --- kind resolution: Stop = finished, Notification = waiting on you ---------
+kindfield() { # $1=hook_event_name $2=field
+  node -e '
+    const m = require(process.argv[1]);
+    const k = m.resolveKind({ hook_event_name: process.argv[2] || undefined }, "proj");
+    process.stdout.write(String(k[process.argv[3]]));
+  ' "$HERE/task-complete.cjs" "$1" "$2"
+}
+assert_eq "Stop -> kind done"          "done"  "$(kindfield Stop kind)"
+assert_eq "Stop -> finished headline"  "Claude Code - task complete"    "$(kindfield Stop headline)"
+assert_eq "Notification -> kind input" "input" "$(kindfield Notification kind)"
+assert_eq "Notification -> input headline" "Claude Code - needs your input" "$(kindfield Notification headline)"
+assert_eq "Notification -> input speech"   "proj needs you"                 "$(kindfield Notification speech)"
+
 # --- dep-advisory install-command mapping (sources the REAL function) --------
 # Load task-complete.sh's helpers without running the notifier.
 CLAUDE_NOTIFY_LIB_ONLY=1 source "$HERE/task-complete.sh" >/dev/null 2>&1

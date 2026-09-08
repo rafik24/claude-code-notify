@@ -152,21 +152,37 @@ function resolveLabel(payload) {
   };
 }
 
+// The Stop hook means a turn FINISHED; the Notification hook means a session is
+// WAITING on you (permission / idle input). Same session-identification, only
+// the wording differs. Pure + exported for the test suite.
+function resolveKind(payload, projectName) {
+  const input = payload.hook_event_name === 'Notification';
+  return {
+    kind: input ? 'input' : 'done',
+    headline: input ? 'Claude Code - needs your input' : 'Claude Code - task complete',
+    speech: input ? `${projectName} needs you` : `for ${projectName}`,
+  };
+}
+
 function notifyComplete(payload) {
   const platform = os.platform();
   const { projectName, label, src } = resolveLabel(payload);
-  const message = `for ${projectName}`;
+  const { kind, headline, speech } = resolveKind(payload, projectName);
   const sid = String(payload.session_id || '').replace(/[^0-9a-fA-F-]/g, '').slice(0, 6) || 'none';
 
   // Dry run: print the resolved decision and do nothing else (for tests).
   if (process.env.CLAUDE_NOTIFY_DRYRUN) {
-    process.stdout.write(JSON.stringify({ sid, project: projectName, label, src }) + '\n');
+    process.stdout.write(JSON.stringify({ sid, project: projectName, label, src, kind, headline, speech }) + '\n');
     return;
   }
 
+  // Opt-out for the waiting-on-you notifications (they fire on every permission
+  // prompt, which is fine for some and noisy for others).
+  if (kind === 'input' && process.env.CLAUDE_NOTIFY_NO_INPUT === '1') return;
+
   const audible = claimAudibleSlot(); // gates AUDIO only
   trace({
-    ev: 'stop', sid, pid: process.pid, platform,
+    ev: kind === 'input' ? 'input' : 'stop', sid, pid: process.pid, platform,
     proj: projectName, src, audible,
     label: `'${label}'`,
   });
@@ -176,6 +192,7 @@ function notifyComplete(payload) {
     const args = [
       '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', ps1File,
       '-Project', projectName, '-Label', label, '-AudioFile', audioFile, '-Sid', sid,
+      '-Headline', headline, '-Speech', speech,
     ];
     if (!audible) args.push('-NoSound');
     run('powershell.exe', args, { windowsHide: true });
@@ -183,11 +200,11 @@ function notifyComplete(payload) {
     // Notification per session (names the session); audio for the winner only.
     run('/bin/bash', [
       path.join(__dirname, 'task-complete.sh'),
-      projectName, audioFile, label, audible ? '1' : '0',
+      projectName, audioFile, label, audible ? '1' : '0', headline, speech,
     ]);
   } else if (audible && platform === 'darwin') {
     run('/bin/sh', ['-c',
-      `say -v Alex "${message}"; afplay "${audioFile}" 2>/dev/null || true`]);
+      `say -v Alex "${speech}"; afplay "${audioFile}" 2>/dev/null || true`]);
   }
 }
 
@@ -216,5 +233,5 @@ function main() {
 if (require.main === module) {
   main();
 } else {
-  module.exports = { readSessionTitle, sessionLabel, getProjectName, resolveLabel };
+  module.exports = { readSessionTitle, sessionLabel, getProjectName, resolveLabel, resolveKind };
 }

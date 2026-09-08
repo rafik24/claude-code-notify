@@ -20,6 +20,8 @@ project="${1:-a project}"
 audio="${2:-}"
 label="${3:-$project}"      # per-session name shown in the notification
 audible="${4:-1}"           # 1 = this session owns the audio slot; 0 = debounced
+headline="${5:-Claude Code - task complete}"  # finished vs waiting-on-you
+speech="${6:-for $project}"                    # spoken phrase
 
 # Build the install command for a package manager + package list. Pure; unit-
 # tested by sourcing this file with CLAUDE_NOTIFY_LIB_ONLY=1.
@@ -110,14 +112,14 @@ notify() {
         local action
         action=$(timeout 12 notify-send --app-name='Claude Code' --wait \
             --action=default=Raise --expire-time=10000 \
-            "Claude Code - task complete" "$label" 2>/dev/null)
+            "$headline" "$label" 2>/dev/null)
         if [ -n "$action" ]; then
             xdotool windowactivate "$wid" 2>/dev/null \
                 || wmctrl -ia "$wid" 2>/dev/null || true
         fi
     else
         notify-send --app-name='Claude Code' --expire-time=10000 \
-            "Claude Code - task complete" "$label" 2>/dev/null || true
+            "$headline" "$label" 2>/dev/null || true
     fi
 }
 
@@ -130,7 +132,7 @@ if [ "$audible" = "1" ]; then
     if [ -n "$audio" ] && [ -f "$audio" ]; then
         paplay "$audio" 2>/dev/null || aplay "$audio" 2>/dev/null || true
     fi
-    espeak "for $project" 2>/dev/null || spd-say "for $project" 2>/dev/null || true
+    espeak "$speech" 2>/dev/null || spd-say "$speech" 2>/dev/null || true
 fi
 
 # --- 4. One-time "install X to enable Y" advisory ----------------------------

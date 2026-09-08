@@ -9,7 +9,7 @@
   "plugins": [
     {
       "name": "claude-code-notify",
-      "description": "Names, chimes and flashes the terminal window of the Claude Code session that just finished — so you know which one, across many concurrent sessions.",
+      "description": "Names, chimes and flashes the terminal window of the Claude Code session that just finished — or is waiting on your input — so you know which one, across many concurrent sessions.",
       "version": "1.0.0",
       "author": {
         "name": "rafik24"

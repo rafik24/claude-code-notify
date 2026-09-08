@@ -1,7 +1,19 @@
 {
-  "description": "Fire a per-session desktop notification when a Claude Code turn ends.",
+  "description": "Per-session desktop notification when a Claude Code turn ends (Stop) or a session is waiting on you (Notification).",
   "hooks": {
     "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PLUGIN_ROOT\"/scripts/task-complete.cjs",
+            "timeout": 20
+          }
+        ]
+      }
+    ],
+    "Notification": [
       {
         "matcher": "*",
         "hooks": [

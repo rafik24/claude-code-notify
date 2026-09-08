@@ -16,6 +16,8 @@ param(
     [string]$Label = '',
     [string]$AudioFile = '',
     [string]$Sid = 'none',
+    [string]$Headline = 'Claude Code - task complete',
+    [string]$Speech = '',
     [switch]$NoSound,
     [switch]$NoToast
 )
@@ -127,8 +129,10 @@ if (-not $NoToast) {
             $launch = " activationType=`"protocol`" launch=`"claude-raise://$($hwnds[0])`""
         }
         $xml = New-Object Windows.Data.Xml.Dom.XmlDocument
-        # Session name is the prominent (first) line so you can scan which tab.
-        $xml.LoadXml("<toast$launch><visual><binding template='ToastGeneric'><text>$n</text><text>Claude Code - task complete</text></binding></visual><audio silent='true'/></toast>")
+        # Session name is the prominent (first) line so you can scan which tab;
+        # the headline says whether it finished or is waiting on you.
+        $h = [Security.SecurityElement]::Escape($Headline)
+        $xml.LoadXml("<toast$launch><visual><binding template='ToastGeneric'><text>$n</text><text>$h</text></binding></visual><audio silent='true'/></toast>")
         [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($appId).Show(
             [Windows.UI.Notifications.ToastNotification]::new($xml))
         Trace "ev=toast sid=$Sid ok=1 name='$name'"
@@ -142,5 +146,6 @@ if (-not $NoSound) {
         (New-Object Media.SoundPlayer $AudioFile).PlaySync()
     }
     Add-Type -AssemblyName System.Speech
-    (New-Object System.Speech.Synthesis.SpeechSynthesizer).Speak("for $Project")
+    $say = if ($Speech) { $Speech } else { "for $Project" }
+    (New-Object System.Speech.Synthesis.SpeechSynthesizer).Speak($say)
 }

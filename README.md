@@ -1,20 +1,22 @@
 # claude-code-notify
 
-> **Know which Claude Code session just finished — by name — even with a dozen running.**
+> **Know which Claude Code session just finished — or is waiting on you — by name, even with a dozen running.**
 
-A **task-complete notifier** for [Claude Code](https://claude.com/claude-code). When a session finishes a turn, it tells you **which** session it was — by name — and draws your eye to the right window. Built for the reality of running **many Claude Code sessions at once**.
+A **notifier** for [Claude Code](https://claude.com/claude-code). When a session **finishes a turn** — or **pauses to ask for your permission/input** — it tells you **which** session it was, by name, and draws your eye to the right window. Built for the reality of running **many Claude Code sessions at once**.
 
 ## Demo
 
 <!-- Record a ~10s clip and drop it at docs/demo.gif, then replace this line with:  ![claude-code-notify demo](docs/demo.gif) -->
 > 📹 *Demo coming.* One clip: three Claude Code sessions open; one finishes → **its** taskbar button flashes and a toast names that exact session.
 
-On a turn end it:
+On each of those moments it:
 
-- 🔔 **plays a chime** and speaks the project name (debounced, so a burst of sessions finishing doesn't echo);
-- 🪟 **shows a desktop notification whose title is the session's own name** (its Claude-generated tab title), so you can see at a glance which of your sessions is done;
-- 🟧 **flashes that session's own taskbar button** — not whichever window happens to be active — so the highlight points at the session that actually finished;
-- 🖱️ **(Windows, optional) makes the notification click-to-raise** the finishing session's window.
+- 🔔 **plays a chime** and speaks the project name (debounced, so a burst doesn't echo);
+- 🪟 **shows a desktop notification whose title is the session's own name** (its Claude-generated tab title), with a headline of **"task complete"** or **"needs your input"** so you know at a glance which session, and why;
+- 🟧 **flashes that session's own taskbar button** — not whichever window happens to be active — so the highlight points at the session that actually needs you;
+- 🖱️ **(Windows, optional) makes the notification click-to-raise** that session's window.
+
+**Two triggers:** the `Stop` hook (a turn finished) and the `Notification` hook (Claude is waiting on your permission or input). The waiting-on-you notifications can be turned off with `CLAUDE_NOTIFY_NO_INPUT=1` if your workflow prompts often.
 
 It is **project-agnostic**: it identifies the project from the nearest `CLAUDE.md`/`package.json` and the session from the Stop hook's transcript, so it works in any repo with no configuration.
 
@@ -73,6 +75,7 @@ powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\.claude\plugins\<...>
 | Env var | Default | Meaning |
 |---|---|---|
 | `CLAUDE_NOTIFY_DEBOUNCE_SECS` | `30` | Minimum seconds between **audible** notifications (machine-wide). The named toast and taskbar flash still fire **per session** — only the sound is coalesced, so a burst of finishes doesn't echo. |
+| `CLAUDE_NOTIFY_NO_INPUT` | _(unset)_ | Set to `1` to suppress the **waiting-on-you** notifications (the `Notification` hook), keeping only task-complete. Useful if your sessions prompt for permission frequently. |
 | `CLAUDE_NOTIFY_NO_DEP_HINT` | _(unset)_ | Set to `1` to suppress the Linux one-time "install `xdotool`/`wmctrl` to enable click-to-raise + taskbar highlight" advisory. |
 
 ## How it identifies the session
