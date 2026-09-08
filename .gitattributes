@@ -1,0 +1,4 @@
+# Cross-platform hook scripts must keep LF endings, or bash breaks on the
+# shebang line on Linux/macOS. Force LF in the working tree on every platform.
+* text=auto eol=lf
+*.wav binary
