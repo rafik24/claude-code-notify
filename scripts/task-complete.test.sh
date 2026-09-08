@@ -77,5 +77,14 @@ if [ "$(resolve "$TMP/resumed.jsonl" self-1)" = "Some other session" ]; then
   echo "  FAIL: foreign session title leaked into a resumed session's notification"; fail=1
 fi
 
+# --- dep-advisory install-command mapping (sources the REAL function) --------
+# Load task-complete.sh's helpers without running the notifier.
+CLAUDE_NOTIFY_LIB_ONLY=1 source "$HERE/task-complete.sh" >/dev/null 2>&1
+assert_eq "apt install command"    "sudo apt install xdotool wmctrl"    "$(dep_install_cmd apt 'xdotool wmctrl')"
+assert_eq "dnf install command"    "sudo dnf install wmctrl"            "$(dep_install_cmd dnf 'wmctrl')"
+assert_eq "pacman install command" "sudo pacman -S xdotool"             "$(dep_install_cmd pacman 'xdotool')"
+assert_eq "zypper install command" "sudo zypper install xdotool wmctrl" "$(dep_install_cmd zypper 'xdotool wmctrl')"
+assert_eq "unknown pkgmgr fallback" "install these packages: xdotool"   "$(dep_install_cmd unknown 'xdotool')"
+
 if [ "$fail" = 0 ]; then echo "PASS"; else echo "FAILED"; fi
 exit $fail

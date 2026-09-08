@@ -47,6 +47,8 @@ Every dependency below is **optional** — if it's missing, that piece is skippe
 
 > **Heads-up on stock desktops:** Ubuntu GNOME and Kubuntu/KDE ship **neither `xdotool` nor `wmctrl`** (nor `paplay`/`espeak`). So out of the box on Linux you get the **named notification + sound** (via the `aplay`/`spd-say` fallbacks) — which already tells you *which* session finished — but **not** click-to-raise or the taskbar highlight. To enable those on **X11**: `sudo apt install xdotool wmctrl`. On **Wayland**, raising/highlighting a window from another app is blocked by the compositor, so those stay off by design regardless.
 
+**You won't have to remember that.** The first time it runs on X11 without those tools, the plugin shows a **one-time** notification naming what's missing and the exact command for your package manager (apt/dnf/pacman/zypper) — e.g. *"Missing: xdotool wmctrl — run: `sudo apt install xdotool wmctrl`"*. It only **displays** the command; it never runs a package manager or asks for sudo (a hook that ran privileged installs would be a trust problem). Shown once per missing-tool-set; silence it entirely with `CLAUDE_NOTIFY_NO_DEP_HINT=1`.
+
 On **Wayland**, compositors block one app from raising another's window, so the raise step is skipped by design and you get the notification without the flash.
 
 ## Windows: enable click-to-raise (one-time, optional)
@@ -64,6 +66,7 @@ powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\.claude\plugins\<...>
 | Env var | Default | Meaning |
 |---|---|---|
 | `CLAUDE_NOTIFY_DEBOUNCE_SECS` | `30` | Minimum seconds between **audible** notifications (machine-wide). The named toast and taskbar flash still fire **per session** — only the sound is coalesced, so a burst of finishes doesn't echo. |
+| `CLAUDE_NOTIFY_NO_DEP_HINT` | _(unset)_ | Set to `1` to suppress the Linux one-time "install `xdotool`/`wmctrl` to enable click-to-raise + taskbar highlight" advisory. |
 
 ## How it identifies the session
 
