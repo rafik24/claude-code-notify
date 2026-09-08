@@ -31,7 +31,20 @@ That's it — the `Stop` hook is active immediately. Verify with `/plugin`.
 | **Linux (X11)** | ✅ | ✅ (`notify-send`) | ✅ (via `xdotool`/`wmctrl`) | ✅ (click action) |
 | **Linux (Wayland)** | ✅ | ✅ | — (compositors block foreign raising) | — |
 
-Windows is the most complete. macOS and Linux paths are functional but less battle-tested — issues/PRs welcome. Linux needs `libnotify` (`notify-send`) and, for raising, `xdotool` or `wmctrl`.
+Windows is the most complete. macOS and Linux paths are functional — the Linux path is verified on Ubuntu 26.04 / KDE / X11 (all six test cases plus a live run) — but less battle-tested elsewhere; issues/PRs welcome.
+
+### Linux dependencies
+
+Every dependency below is **optional** — if it's missing, that piece is skipped as a silent no-op (a missing tool never breaks the hook). But for the full experience:
+
+| Feature | Needs (any one) | Notes |
+|---|---|---|
+| Desktop notification | `libnotify` (`notify-send`) | Present on most desktops. |
+| Sound | `paplay` or `aplay` | PulseAudio/PipeWire or ALSA. |
+| Spoken project name | `spd-say` (speech-dispatcher) **or** `espeak` | Kubuntu ships `spd-say` but **not** `espeak`; other distros vary — one is usually present. |
+| Click-to-raise / window flash (X11) | `xdotool` **or** `wmctrl` | **Neither ships by default on KDE/Kubuntu** — `sudo apt install xdotool` to enable raising. Without them, you still get the named notification and sound. |
+
+On **Wayland**, compositors block one app from raising another's window, so the raise step is skipped by design and you get the notification without the flash.
 
 ## Windows: enable click-to-raise (one-time, optional)
 
