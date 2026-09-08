@@ -1,0 +1,21 @@
+{
+  "name": "claude-code-notify",
+  "version": "1.0.0",
+  "description": "Names, chimes and flashes the terminal window of the Claude Code session that just finished — so you know which one, across many concurrent sessions.",
+  "author": {
+    "name": "rafik24"
+  },
+  "repository": "https://github.com/rafik24/claude-code-notify",
+  "homepage": "https://github.com/rafik24/claude-code-notify",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "plugin",
+    "hooks",
+    "notifications",
+    "stop-hook",
+    "taskbar",
+    "toast",
+    "desktop-notification"
+  ]
+}

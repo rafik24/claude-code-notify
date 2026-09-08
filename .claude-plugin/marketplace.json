@@ -1,0 +1,29 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "claude-code-notify",
+  "description": "A task-complete notifier for Claude Code that identifies which session finished.",
+  "owner": {
+    "name": "rafik24"
+  },
+  "version": "1.0.0",
+  "plugins": [
+    {
+      "name": "claude-code-notify",
+      "description": "Names, chimes and flashes the terminal window of the Claude Code session that just finished — so you know which one, across many concurrent sessions.",
+      "version": "1.0.0",
+      "author": {
+        "name": "rafik24"
+      },
+      "source": "./",
+      "category": "productivity",
+      "homepage": "https://github.com/rafik24/claude-code-notify",
+      "tags": [
+        "notifications",
+        "hooks",
+        "stop-hook",
+        "taskbar",
+        "toast"
+      ]
+    }
+  ]
+}
