@@ -100,5 +100,29 @@ assert_eq "pacman install command" "sudo pacman -S xdotool"             "$(dep_i
 assert_eq "zypper install command" "sudo zypper install xdotool wmctrl" "$(dep_install_cmd zypper 'xdotool wmctrl')"
 assert_eq "unknown pkgmgr fallback" "install these packages: xdotool"   "$(dep_install_cmd unknown 'xdotool')"
 
+# --- Wayland gate: even with xdotool+wmctrl PRESENT, Wayland must skip the
+#     window-find, the wmctrl highlight, and the notify-send Raise action (they
+#     can't work under a compositor - a dead affordance). X11 must use them.
+#     Stub the tools onto PATH and trace the REAL script's calls.
+gate_calls() { # $1=XDG_SESSION_TYPE -> "search=N attn=N action=yes|no"
+  local stub calls
+  stub="$(mktemp -d)"; calls="$stub/calls"
+  printf '#!/usr/bin/env bash\necho "xdotool $*" >> "%s"\n[ "$1" = search ] && echo 12345\nexit 0\n' "$calls" > "$stub/xdotool"
+  printf '#!/usr/bin/env bash\necho "wmctrl $*" >> "%s"\nexit 0\n' "$calls" > "$stub/wmctrl"
+  printf '#!/usr/bin/env bash\n[ "$1" = --help ] && { echo "--action --wait"; exit 0; }\necho "notify-send $*" >> "%s"\nexit 0\n' "$calls" > "$stub/notify-send"
+  chmod +x "$stub"/xdotool "$stub"/wmctrl "$stub"/notify-send
+  : > "$calls"
+  PATH="$stub:$PATH" DISPLAY=":0" XDG_SESSION_TYPE="$1" \
+    bash "$HERE/task-complete.sh" demo "" 'demo-title' 0 'Claude Code - task complete' 'for demo' >/dev/null 2>&1
+  local search attn action
+  search=$(grep -c '^xdotool search' "$calls" 2>/dev/null)
+  attn=$(grep -c 'demands_attention' "$calls" 2>/dev/null)
+  action=$(grep -q -- '--action' "$calls" && echo yes || echo no)
+  rm -rf "$stub"
+  echo "search=$search attn=$attn action=$action"
+}
+assert_eq "Wayland gate: skip raise+highlight with tools present" "search=0 attn=0 action=no"  "$(gate_calls wayland)"
+assert_eq "X11: use raise+highlight when tools present"           "search=1 attn=1 action=yes" "$(gate_calls x11)"
+
 if [ "$fail" = 0 ]; then echo "PASS"; else echo "FAILED"; fi
 exit $fail
